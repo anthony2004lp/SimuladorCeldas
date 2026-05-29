@@ -1,0 +1,6 @@
+{
+    "simulation": {
+        "update_frequency": 60,
+        "interpolation_method": "bilinear"
+    }
+}
