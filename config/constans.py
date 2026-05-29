@@ -14,6 +14,6 @@ CORNERS = {
 # Colores de visualizacion
 COLORS = {
     'light_weight': '#4CAF50',   # Verde - peso bajo
-    'medium_weight': '#FFC107',  # Amarillo - peso medio
+    'medium_weight': "#005EEC",  # Amarillo - peso medio
     'heavy_weight': '#F44336'    # Rojo - peso alto
 }

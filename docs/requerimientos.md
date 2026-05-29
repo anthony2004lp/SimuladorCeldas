@@ -3,8 +3,9 @@
 ## Descripcion General
 Simulador interactivo de escritorio que muestra como se distribuye un peso total
 entre 4 sensores ubicados en las esquinas de un area cuadrada, utilizando
-interpolacion bilineal inversa. El usuario arrastra una bola con el mouse y ve
-en tiempo real como cambian los pesos en cada esquina.
+interpolacion bilineal inversa. El usuario puede arrastrar una bola con el mouse
+(modo simulacion) o conectar una balanza real via puerto serial (modo datos reales)
+para visualizar las lecturas de las celdas de carga en tiempo real.
 
 ## Requerimientos Funcionales
 
@@ -45,26 +46,48 @@ en tiempo real como cambian los pesos en cada esquina.
 ### RF07 - Reinicio de Posicion
 - Debe existir un boton para reiniciar la posicion de la bola al centro del cuadrado.
 
+### RF08 - Conexion Serial
+- El usuario debe poder escanear los puertos serial disponibles del sistema.
+- El usuario debe poder seleccionar un puerto y velocidad de baudios para conectar.
+- Debe existir un boton para conectar/desconectar del puerto serial.
+- Debe mostrar el estado de la conexion en tiempo real.
+- Al conectar, la aplicacion debe cambiar automaticamente a modo "Datos reales".
+
+### RF09 - Lectura de Datos Seriales
+- El sistema debe leer datos del puerto serial en segundo plano sin bloquear la interfaz.
+- Debe soportar formato JSON, CSV y extraccion de numeros libres.
+- Los pesos recibidos deben mostrarse en la interfaz en tiempo real.
+- La posicion de la bola debe calcularse a partir de los 4 pesos reales.
+
+### RF10 - Modos de Operacion
+- **Modo Simulacion**: la bola se arrastra con el mouse, los pesos se calculan por interpolacion.
+- **Modo Datos Reales**: los pesos provienen del puerto serial, la bola refleja la posicion real.
+- La aplicacion debe indicar visualmente que modo esta activo.
+- En modo datos reales, se debe deshabilitar el arrastre de la bola.
+
 ## Requerimientos No Funcionales
 
 ### RNF01 - Tecnologia
 - Interfaz grafica: tkinter (biblioteca estandar de Python, sin dependencias externas).
 - Logica de negocio: Python puro con NumPy para operaciones numericas.
+- Comunicacion serial: pyserial 3.5.
 - Comunicacion: llamadas directas a metodos (no hay red, es aplicacion de escritorio).
 
 ### RNF02 - Rendimiento
-- Actualizacion en tiempo real mientras se arrastra la bola.
-- Sin latencia perceptible: todo el calculo es local.
+- Actualizacion en tiempo real mientras se arrastra la bola o se reciben datos seriales.
+- Lectura serial en hilo separado para no bloquear la interfaz.
 
 ### RNF03 - Compatibilidad
 - Compatible con Windows, Linux y macOS (al ser Python puro con tkinter).
 - No requiere conexion a internet ni servidor web.
+- Soporta cualquier balanza que envie datos por puerto serial en formato texto.
 
 ### RNF04 - Configuracion
 - Constantes del sistema (tamano, pesos maximos/minimos, colores) en `config/constans.py`.
-- Parametros de simulacion en `config/settings.json`.
+- Parametros de simulacion y serial en `config/settings.json`.
 
 ### RNF05 - Dependencias
 - Python 3.8 o superior.
-- NumPy 1.26 (para operaciones numericas, aunque el calculo principal no lo requiere).
+- NumPy 1.26.
+- pyserial 3.5.
 - tkinter (incluido con Python).
