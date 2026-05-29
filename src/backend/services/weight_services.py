@@ -65,7 +65,7 @@ class WeightService:
         if percentage < 33:
             return '#4CAF50'  # Verde - peso bajo
         elif percentage < 66:
-            return '#FFC107'  # Amarillo - peso medio
+            return "#006AFF"  # Amarillo - peso medio
         else:
             return '#F44336'  # Rojo - peso alto
 

@@ -2,5 +2,10 @@
     "simulation": {
         "update_frequency": 60,
         "interpolation_method": "bilinear"
+    },
+    "serial": {
+        "default_baudrate": 9600,
+        "default_timeout": 1,
+        "data_format": "csv"
     }
 }
