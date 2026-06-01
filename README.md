@@ -30,6 +30,7 @@ Aplicacion de escritorio interactiva que visualiza la distribucion de peso entre
 - tkinter (incluido con Python)
 - NumPy 1.26
 - pyserial 3.5
+- cx_Freeze==8.6.4
 
 ## Instalacion y ejecucion
 
@@ -68,6 +69,7 @@ Lineas de texto terminadas en `\n`:
 SimuladorCeldas/
 ├── app.py                        # Interfaz grafica (tkinter)
 ├── requirements.txt              # Dependencias
+├── setup.py                      # Empaquetado de carpetas/archivos
 ├── .gitignore
 ├── config/
 │   ├── constans.py               # Constantes del sistema
@@ -89,3 +91,4 @@ SimuladorCeldas/
 - **Python 3** con **tkinter** para la interfaz de escritorio
 - **NumPy** para operaciones numericas
 - **pyserial** para comunicacion con balanzas via puerto serial
+- **cx_Freeze** para más control sobre el proceso de empaquetado
