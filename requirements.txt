@@ -1,2 +1,7 @@
+# Requisitos para el proyecto Simulador de Celdas de Carga
+# Para calculos y manejo de datos
 numpy==2.4.1
+# Puerto seriales
 pyserial==3.5
+# Empaquetado con más control sobre dependencias y archivos
+cx_Freeze==8.6.4

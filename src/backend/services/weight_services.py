@@ -1,5 +1,6 @@
 import sys
 import os
+import random
 sys.path.append(os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(__file__)))))
 
 from config.constans import SQUARE_SIZE, MAX_WEIGHT, MIN_WEIGHT, CORNERS
@@ -49,10 +50,10 @@ class WeightService:
 
         # Aplicar peso total y redondear a 2 decimales
         return {
-            'top-left': round(top_left * total_weight, 2),
-            'top-right': round(top_right * total_weight, 2),
-            'bottom-left': round(bottom_left * total_weight, 2),
-            'bottom-right': round(bottom_right * total_weight, 2)
+            'top-left': round(top_left * total_weight + random.uniform(0, 9), 2),
+            'top-right': round(top_right * total_weight + random.uniform(0, 9), 2),
+            'bottom-left': round(bottom_left * total_weight + random.uniform(0, 9), 2),
+            'bottom-right': round(bottom_right * total_weight + random.uniform(0, 9), 2)
         }
 
     def get_weight_color(self, weight, total_weight=MAX_WEIGHT):
