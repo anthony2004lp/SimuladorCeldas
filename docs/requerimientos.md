@@ -28,9 +28,9 @@ para visualizar las lecturas de las celdas de carga en tiempo real.
 - Los calculos se actualizan automaticamente al cambiar el valor.
 
 ### RF04 - Calculo de Distribucion
-- El sistema debe calcular como se distribuye el peso total entre las 4 esquinas.
+- El sistema debe calcular como se distribuye el peso total entre las 4 esquinas(con algunas variaciones de peso).
 - El calculo debe usar interpolacion bilineal inversa: a mayor proximidad a una esquina, mayor peso en esa esquina.
-- La suma de los pesos de las 4 esquinas debe ser igual al peso total.
+- La suma de los pesos de las 4 esquinas debe ser cercana al peso total.
 
 ### RF05 - Visualizacion de Resultados
 - Mostrar el peso calculado para cada esquina en kg con 2 decimales.

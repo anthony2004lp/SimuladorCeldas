@@ -8,6 +8,7 @@ sys.path.append(os.path.dirname(__file__))
 from src.backend.services.weight_services import WeightService
 from src.backend.models.weight_models import WeightDistribution
 from src.backend.services.serial_service import SerialService
+from src.backend.services.cell_protocol import CellProtocol
 from config.constans import SQUARE_SIZE, MAX_WEIGHT, MIN_WEIGHT, COLORS, CORNERS
 
 
@@ -27,7 +28,8 @@ class SimuladorCeldas:
         # Inicializar servicios y modelos
         self.weight_service = WeightService()
         self.distribution = WeightDistribution()
-        self.serial_service = SerialService()
+        self.cell_protocol = CellProtocol()  # Protocolo de comunicacion con celdas HBM
+        self.serial_service = SerialService(protocol=self.cell_protocol)
 
         # Estado de la simulacion
         self.ball_x = SQUARE_SIZE // 2
@@ -42,6 +44,7 @@ class SimuladorCeldas:
         self.serial_status_var = tk.StringVar(value="Desconectado")
         self.forward_data_var = tk.BooleanVar(value=False)  # Reenviar datos al otro programa
         self._serial_update_id = None
+        self._command_update_id = None  # ID para actualizacion de comando en UI
 
         # Construir la interfaz grafica
         self._crear_interfaz()
@@ -199,6 +202,15 @@ class SimuladorCeldas:
         )
         self.forward_check.grid(row=6, column=0, columnspan=2, pady=(8, 0))
 
+        # Label para mostrar el ultimo comando/respuesta del protocolo HBM
+        self.cmd_label = ttk.Label(
+            serial_frame,
+            text="",
+            font=("Segoe UI", 8),
+            foreground="#666"
+        )
+        self.cmd_label.grid(row=7, column=0, columnspan=2, pady=(5, 0))
+
         # Panel de resultados (pesos en esquinas)
         results_frame = ttk.LabelFrame(main_frame, text="Distribucion de Pesos", padding=15)
         results_frame.grid(row=2, column=0, columnspan=2, pady=(20, 0), sticky="ew")
@@ -280,6 +292,9 @@ class SimuladorCeldas:
         self.connect_btn.config(text="Desconectar")
         self.mode_label.config(text="Modo: Simulacion (reenvio activo)", foreground="#FF9800")
 
+        # Registrar callback para respuestas de comandos del protocolo
+        self.serial_service.on_command_response = self._on_protocol_command
+
         # Iniciar lectura en segundo plano
         self.serial_service.start_reading(
             data_callback=self._on_serial_data,
@@ -293,11 +308,15 @@ class SimuladorCeldas:
         self.connect_btn.config(text="Conectar")
         self.receiving_data = False
         self.mode_label.config(text="Modo: Simulacion", foreground="#666")
+        self.cmd_label.config(text="")
 
         # Cancelar actualizaciones pendientes
         if self._serial_update_id:
             self.root.after_cancel(self._serial_update_id)
             self._serial_update_id = None
+        if self._command_update_id:
+            self.root.after_cancel(self._command_update_id)
+            self._command_update_id = None
 
     def _on_serial_data(self, weights):
         """
@@ -345,6 +364,9 @@ class SimuladorCeldas:
         # Actualizar visualizacion
         self._dibujar_canvas()
 
+        # Actualizar pesos en el protocolo de celdas virtuales
+        self.cell_protocol.update_all_weights(weights)
+
         # Actualizar labels de pesos con colores
         for corner, weight_value in weights.items():
             color = self.weight_service.get_weight_color(weight_value, total)
@@ -367,6 +389,34 @@ class SimuladorCeldas:
         self.root.after_idle(
             lambda: self.status_label.config(foreground="#F44336")
         )
+
+    def _on_protocol_command(self, command, response):
+        """
+        Callback para cuando se procesa un comando del protocolo HBM
+        Muestra el comando y respuesta en la UI para feedback visual
+
+        Args:
+            command: Comando recibido (ej: "S01;MSV?")
+            response: Respuesta enviada (ej: "-0010236")
+        """
+        if self._command_update_id:
+            self.root.after_cancel(self._command_update_id)
+        self._command_update_id = self.root.after_idle(
+            self._mostrar_comando_protocolo, command, response
+        )
+
+    def _mostrar_comando_protocolo(self, command, response):
+        """
+        Actualiza la etiqueta de comando en la UI
+        Muestra el ultimo comando recibido y su respuesta, y lo limpia tras 5 segundos
+        """
+        self._command_update_id = None
+        self.cmd_label.config(
+            text=f"CMD: {command} => {response}",
+            foreground="#005EEC"
+        )
+        # Limpiar el mensaje despues de 5 segundos
+        self.root.after(5000, lambda: self.cmd_label.config(text=""))
 
     def _reenviar_datos(self, weights):
         """
@@ -435,6 +485,9 @@ class SimuladorCeldas:
         self.distribution.position_x = self.ball_x
         self.distribution.position_y = self.ball_y
         self.distribution.corner_weights = corner_weights
+
+        # Actualizar pesos en el protocolo de celdas virtuales
+        self.cell_protocol.update_all_weights(corner_weights)
 
         # Actualizar labels de pesos con colores
         for corner, weight_value in corner_weights.items():

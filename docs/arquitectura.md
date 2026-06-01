@@ -22,12 +22,12 @@ de capas simple.
 │  │  └────────────────────────────────────────────────────┘   │   │
 │  └───────────────────────────────────────────────────────────┘   │
 │                        │                                         │
-│          ┌─────────────┼─────────────┐                           │
-│          ▼             ▼             ▼                           │
-│  ┌──────────────┐ ┌──────────┐ ┌──────────────┐                 │
-│  │ WeightService│ │ Serial   │ │ SerialService│                 │
-│  │ (simulacion) │ │ (datos)  │ │ (hardware)   │                 │
-│  └──────────────┘ └──────────┘ └──────────────┘                 │
+│          ┌─────────────┼──────────────┬──────────────┐          │
+│          ▼             ▼              ▼              ▼          │
+│  ┌──────────────┐ ┌──────────┐ ┌──────────────┐ ┌────────────┐ │
+│  │ WeightService│ │ Serial   │ │ SerialService│ │ CellProtoc │ │
+│  │ (simulacion) │ │ (datos)  │ │ (hardware)   │ │ (comandos) │ │
+│  └──────────────┘ └──────────┘ └──────────────┘ └────────────┘ │
 └──────────────────────────────────────────────────────────────────┘
 ```
 
@@ -48,10 +48,12 @@ SimuladorCeldas/
 │       │   └── weight_models.py       # Modelo de datos
 │       └── services/
 │           ├── weight_services.py     # Logica de interpolacion bilineal
-│           └── serial_service.py      # Comunicacion serial con balanza
+│           ├── serial_service.py      # Comunicacion serial con balanza
+│           └── cell_protocol.py       # Protocolo HBM de celdas (MSV?, IDN?, ADR, TDD)
 └── docs/
     ├── requerimientos.md          # Requerimientos funcionales y no funcionales
-    └── arquitectura.md            # Este documento
+    ├── arquitectura.md            # Este documento
+    └── protocolo_comunicacion.md  # Documentacion del protocolo de comunicacion HBM
 ```
 
 ## Capas de la Aplicacion
@@ -81,7 +83,10 @@ SimuladorCeldas/
   - **JSON**: `{"top-left": 25, "top-right": 25, "bottom-left": 25, "bottom-right": 25}`
   - **CSV**: `25.0,25.0,25.0,25.0` (4 valores separados por coma)
   - **Numeros libres**: Extrae los primeros 4 numeros de la linea con regex
+- **Protocolo de comandos HBM**: Integra `CellProtocol` para detectar y responder
+  automaticamente a comandos como `Sxx;MSV?`, `Sxx;IDN?`, `ADR` y `TDD1`
 - **Lectura**: Hilo en segundo plano con buffer de linea, parsea cada linea completa
+  verificando primero si es un comando del protocolo antes de interpretarla como datos
 
 ### 3. Capa de Logica de Negocio (Services)
 - **Clase**: `WeightService` en `src/backend/services/weight_services.py`

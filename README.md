@@ -6,22 +6,22 @@ Aplicacion de escritorio interactiva que visualiza la distribucion de peso entre
 - **Datos reales**: conecta una balanza via puerto serial y visualiza las lecturas en tiempo real
 
 ```
-┌──────────────────────────────────────────────┐
-│  Simulador de Distribucion de Pesos          │
-├──────────┬───────────────────────────────────┤
-│          │  Control          Puerto Serial   │
-│  ┌──────┐│  Peso: [100]      COM3  [9600]   │
-│  │  TL  ││  Pos: (200,200)   [Conectar]     │
-│  │      ││  [Reiniciar]      Desconectado   │
-│  │  ●   ││                                   │
-│  │      ││  Modo: Simulacion                 │
-│  │  BL  ││                                   │
-│  └──────┘│                                   │
-├──────────┴───────────────────────────────────┤
-│  Distribucion de Pesos                       │
+┌─────────────────────────────────────────────────────┐
+│  Simulador de Distribucion de Pesos                 │
+├──────────┬──────────────────────────────────────────┤
+│          │  Control          Puerto Serial          │
+│  ┌──────┐│  Peso: [100]      COM3  [9600]           │
+│  │  TL  ││  Pos: (200,200)   [Conectar]             │
+│  │      ││  [Reiniciar]      Desconectado           │
+│  │  ●   ││                                          │
+│  │      ││  Modo: Simulacion                        │
+│  │  BL  ││                                          │
+│  └──────┘│                                          │
+├──────────┴──────────────────────────────────────────┤
+│  Distribucion de Pesos                              │
 │  Superior Izquierda: 25.0 kg  Superior Der: 25.0 kg │
 │  Inferior Izquierda: 25.0 kg  Inferior Der: 25.0 kg │
-└──────────────────────────────────────────────┘
+└─────────────────────────────────────────────────────┘
 ```
 
 ## Requisitos
