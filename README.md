@@ -38,7 +38,12 @@ Aplicacion de escritorio interactiva que visualiza la distribucion de peso entre
 pip install -r requirements.txt
 python app.py
 ```
+## Empaquetado de programa
 
+```bash
+python setup.py build (.exe)
+python setup.py bdist_msi (instalador)
+```
 ## Como usar
 
 ### Modo Simulacion
@@ -86,6 +91,7 @@ SimuladorCeldas/
 │       └── serial_service.py     # Comunicacion serial
 ├── docs/
 │   ├── arquitectura.md           # Arquitectura detallada
+|   ├── protocolo_comunicacion.md # Comunicacion de celdas
 │   └── requerimientos.md         # Requerimientos
 └── README.md
 ```
