@@ -106,19 +106,27 @@ class SimuladorCeldas:
         weight_spinbox = ttk.Spinbox(
             control_frame,
             from_=MIN_WEIGHT,
-            to=500,
-            increment=10,
+            to=MAX_WEIGHT,
+            increment=1000,
             textvariable=self.total_weight,
             width=15,
             font=("Segoe UI", 10)
         )
-        weight_spinbox.grid(row=1, column=0, pady=(0, 20))
+        weight_spinbox.grid(row=1, column=0, pady=(0, 5))
         weight_spinbox.bind("<KeyRelease>", lambda e: self._calcular_y_actualizar())
         self.total_weight.trace_add("write", lambda *_: self._calcular_y_actualizar())
 
+        # Boton para poner peso en 0
+        reset_weight_btn = ttk.Button(
+            control_frame,
+            text="Poner peso en 0 kg",
+            command=self._reiniciar_peso
+        )
+        reset_weight_btn.grid(row=2, column=0, sticky="ew", pady=(0, 20))
+
         # Mostrar posicion
         ttk.Label(control_frame, text="Posicion:", font=("Segoe UI", 10, "bold")).grid(
-            row=2, column=0, sticky="w", pady=(0, 5)
+            row=3, column=0, sticky="w", pady=(0, 5)
         )
         self.pos_label = ttk.Label(
             control_frame,
@@ -126,7 +134,7 @@ class SimuladorCeldas:
             font=("Segoe UI", 12),
             foreground="#667eea"
         )
-        self.pos_label.grid(row=3, column=0, sticky="w", pady=(0, 20))
+        self.pos_label.grid(row=4, column=0, sticky="w", pady=(0, 20))
 
         # Boton para reiniciar
         reset_btn = ttk.Button(
@@ -134,7 +142,7 @@ class SimuladorCeldas:
             text="Reiniciar posicion",
             command=self._reiniciar_posicion
         )
-        reset_btn.grid(row=4, column=0, sticky="ew")
+        reset_btn.grid(row=5, column=0, sticky="ew")
 
         # Panel de conexion serial
         serial_frame = ttk.LabelFrame(right_panel, text="Puerto Serial", padding=15)
@@ -224,6 +232,7 @@ class SimuladorCeldas:
             "bottom-right": "Inferior Derecha"
         }
 
+        self.corner_buttons = {}
         for i, (corner_key, corner_display) in enumerate(corner_names.items()):
             frame = ttk.Frame(results_frame)
             frame.grid(row=i // 2, column=i % 2, padx=10, pady=5, sticky="ew")
@@ -234,6 +243,15 @@ class SimuladorCeldas:
                 text=f"Esquina {corner_display}:",
                 font=("Segoe UI", 9)
             ).pack(side="left")
+
+            btn = ttk.Button(
+                frame,
+                text="Llevar",
+                width=5,
+                command=lambda k=corner_key: self._mover_a_esquina(k)
+            )
+            btn.pack(side="left", padx=(5, 0))
+            self.corner_buttons[corner_key] = btn
 
             weight_label = ttk.Label(
                 frame,
@@ -502,6 +520,30 @@ class SimuladorCeldas:
 
         # Reenviar datos al otro programa si esta activo
         self._reenviar_datos(corner_weights)
+
+    def _reiniciar_peso(self):
+        """Pone el peso total en 0 kg"""
+        if self.receiving_data:
+            return
+
+        self.total_weight.set(0)
+        self._calcular_y_actualizar()
+
+    def _mover_a_esquina(self, corner_key):
+        """Mueve la bola a la esquina indicada"""
+        if self.receiving_data:
+            return
+
+        margin = 15
+        positions = {
+            "top-left": (margin, margin),
+            "top-right": (SQUARE_SIZE - margin, margin),
+            "bottom-left": (margin, SQUARE_SIZE - margin),
+            "bottom-right": (SQUARE_SIZE - margin, SQUARE_SIZE - margin)
+        }
+        self.ball_x, self.ball_y = positions[corner_key]
+        self._dibujar_canvas()
+        self._calcular_y_actualizar()
 
     def _reiniciar_posicion(self):
         """Reinicia la posicion de la bola al centro del cuadrado"""

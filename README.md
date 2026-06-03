@@ -11,16 +11,16 @@ Aplicacion de escritorio interactiva que visualiza la distribucion de peso entre
 ├──────────┬──────────────────────────────────────────┤
 │          │  Control          Puerto Serial          │
 │  ┌──────┐│  Peso: [100]      COM3  [9600]           │
-│  │  TL  ││  Pos: (200,200)   [Conectar]             │
-│  │      ││  [Reiniciar]      Desconectado           │
-│  │  ●   ││                                          │
+│  │  TL  ││  [0 kg]          [Conectar]              │
+│  │      ││  Pos: (200,200)  Desconectado            │
+│  │  ●   ││  [Reiniciar]                             │
 │  │      ││  Modo: Simulacion                        │
 │  │  BL  ││                                          │
 │  └──────┘│                                          │
 ├──────────┴──────────────────────────────────────────┤
 │  Distribucion de Pesos                              │
-│  Superior Izquierda: 25.0 kg  Superior Der: 25.0 kg │
-│  Inferior Izquierda: 25.0 kg  Inferior Der: 25.0 kg │
+│  Sup Izq: 25.0 [Llevar]  Sup Der: 25.0 [Llevar]    │
+│  Inf Izq: 25.0 [Llevar]  Inf Der: 25.0 [Llevar]    │
 └─────────────────────────────────────────────────────┘
 ```
 
@@ -43,10 +43,14 @@ python app.py
 ### Modo Simulacion
 1. **Arrastrar la bola roja** dentro del cuadrado con el mouse
 2. **Ajustar el peso total** (0-500 kg, pasos de 10)
-3. Los pesos en las esquinas se actualizan en tiempo real con colores:
+3. Use **Poner peso en 0 kg** para llevar el peso total a cero
+4. Use **Reiniciar posicion** para centrar la bola
+5. Use **Llevar** en cada esquina para mover la bola directamente a esa posicion
+6. Los pesos en las esquinas se actualizan en tiempo real con colores:
    - Verde (< 33%): peso bajo
    - Amarillo (33-66%): peso medio
    - Rojo (> 66%): peso alto
+7. Cada celda tiene una variacion fija que se mantiene constante durante toda la sesion
 
 ### Modo Datos Reales (Serial)
 1. Conecte la balanza al puerto USB/RS232

@@ -10,8 +10,14 @@ class WeightService:
     """Servicio para calculos de distribucion de pesos"""
 
     def __init__(self):
-        """Inicializa el servicio con el tamano del cuadrado"""
+        """Inicializa el servicio con el tamano del cuadrado y offsets fijos por celda"""
         self.square_size = SQUARE_SIZE
+        self._corner_offsets = {
+            'top-left': round(random.uniform(0, 9), 2),
+            'top-right': round(random.uniform(0, 9), 2),
+            'bottom-left': round(random.uniform(0, 9), 2),
+            'bottom-right': round(random.uniform(0, 9), 2)
+        }
 
     def calculate_corner_weights(self, position_x, position_y, total_weight=100):
         """
@@ -48,12 +54,12 @@ class WeightService:
             bottom_left /= total
             bottom_right /= total
 
-        # Aplicar peso total y redondear a 2 decimales
+        # Aplicar peso total con offset fijo por celda y redondear a 2 decimales
         return {
-            'top-left': round(top_left * total_weight + random.uniform(0, 9), 2),
-            'top-right': round(top_right * total_weight + random.uniform(0, 9), 2),
-            'bottom-left': round(bottom_left * total_weight + random.uniform(0, 9), 2),
-            'bottom-right': round(bottom_right * total_weight + random.uniform(0, 9), 2)
+            'top-left': round(top_left * total_weight + self._corner_offsets['top-left'], 2),
+            'top-right': round(top_right * total_weight + self._corner_offsets['top-right'], 2),
+            'bottom-left': round(bottom_left * total_weight + self._corner_offsets['bottom-left'], 2),
+            'bottom-right': round(bottom_right * total_weight + self._corner_offsets['bottom-right'], 2)
         }
 
     def get_weight_color(self, weight, total_weight=MAX_WEIGHT):
@@ -61,6 +67,8 @@ class WeightService:
         Determina el color segun el porcentaje de peso
         Verde: menos del 33%, Amarillo: entre 33% y 66%, Rojo: mas del 66%
         """
+        if total_weight == 0:
+            return '#4CAF50'
         percentage = (weight / total_weight) * 100
 
         if percentage < 33:
