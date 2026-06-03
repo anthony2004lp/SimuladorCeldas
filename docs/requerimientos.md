@@ -28,9 +28,10 @@ para visualizar las lecturas de las celdas de carga en tiempo real.
 - Los calculos se actualizan automaticamente al cambiar el valor.
 
 ### RF04 - Calculo de Distribucion
-- El sistema debe calcular como se distribuye el peso total entre las 4 esquinas(con algunas variaciones de peso).
+- El sistema debe calcular como se distribuye el peso total entre las 4 esquinas (con variaciones de peso).
 - El calculo debe usar interpolacion bilineal inversa: a mayor proximidad a una esquina, mayor peso en esa esquina.
 - La suma de los pesos de las 4 esquinas debe ser cercana al peso total.
+- Cada celda debe tener una variacion fija generada al inicio, que no cambia al mover la bola.
 
 ### RF05 - Visualizacion de Resultados
 - Mostrar el peso calculado para cada esquina en kg con 2 decimales.
@@ -43,23 +44,31 @@ para visualizar las lecturas de las celdas de carga en tiempo real.
 - Mostrar las coordenadas (X, Y) actuales de la bola dentro del area.
 - Las coordenadas se muestran en pixeles (0-400).
 
-### RF07 - Reinicio de Posicion
+### RF07 - Reinicio de Peso a Cero
+- Debe existir un boton para poner el peso total en 0 kg.
+- Al presionarlo, el control de peso total debe mostrar 0 y recalcular la distribucion.
+
+### RF08 - Botones "Llevar" a Esquina
+- Debe existir un boton "Llevar" junto a cada esquina en el panel de resultados.
+- Al presionarlo, la bola debe moverse a esa esquina y recalcularse la distribucion.
+
+### RF09 - Reinicio de Posicion
 - Debe existir un boton para reiniciar la posicion de la bola al centro del cuadrado.
 
-### RF08 - Conexion Serial
+### RF10 - Conexion Serial
 - El usuario debe poder escanear los puertos serial disponibles del sistema.
 - El usuario debe poder seleccionar un puerto y velocidad de baudios para conectar.
 - Debe existir un boton para conectar/desconectar del puerto serial.
 - Debe mostrar el estado de la conexion en tiempo real.
 - Al conectar, la aplicacion debe cambiar automaticamente a modo "Datos reales".
 
-### RF09 - Lectura de Datos Seriales
+### RF11 - Lectura de Datos Seriales
 - El sistema debe leer datos del puerto serial en segundo plano sin bloquear la interfaz.
 - Debe soportar formato JSON, CSV y extraccion de numeros libres.
 - Los pesos recibidos deben mostrarse en la interfaz en tiempo real.
 - La posicion de la bola debe calcularse a partir de los 4 pesos reales.
 
-### RF10 - Modos de Operacion
+### RF12 - Modos de Operacion
 - **Modo Simulacion**: la bola se arrastra con el mouse, los pesos se calculan por interpolacion.
 - **Modo Datos Reales**: los pesos provienen del puerto serial, la bola refleja la posicion real.
 - La aplicacion debe indicar visualmente que modo esta activo.

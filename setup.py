@@ -17,7 +17,7 @@ from cx_Freeze import setup, Executable
 APP_NAME = "SimuladorCeldas"
 VERSION = "1.1.0"
 DESCRIPTION = "Simulador de distribucion de pesos con protocolo HBM"
-AUTHOR = "Tomas Halvorsen"
+AUTHOR = "Anthony Josue Lauar Perez"
 
 # Archivo principal
 MAIN_SCRIPT = "app.py"

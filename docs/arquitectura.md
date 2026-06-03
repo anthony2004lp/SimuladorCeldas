@@ -61,9 +61,9 @@ SimuladorCeldas/
 - **Clase principal**: `SimuladorCeldas` en `app.py`
 - **Componentes visuales**:
   - `Canvas`: Dibuja el area cuadrada, cuadricula, marcas de esquinas y la bola roja
-  - `Panel de Control`: Entrada de peso total, informacion de posicion, boton de reinicio
+  - `Panel de Control`: Entrada de peso total, boton para poner peso en 0 kg, informacion de posicion, boton de reinicio de posicion
   - `Panel Puerto Serial`: Selector de puerto, baudios, boton conectar/desconectar, estado
-  - `Panel de Resultados`: Muestra los pesos de cada esquina con colores
+  - `Panel de Resultados`: Muestra los pesos de cada esquina con colores y botones "Llevar" para mover la bola a esa esquina
 - **Modos de operacion**:
   - **Simulacion** (por defecto): la bola se arrastra con el mouse y los pesos se calculan por interpolacion
   - **Datos reales** (serial conectado): los pesos llegan del puerto serial y la bola se posiciona segun los valores reales
@@ -94,6 +94,7 @@ SimuladorCeldas/
     - `bottom_right = nx * ny`
   - Normaliza para que la suma sea 1
   - Multiplica por el peso total
+  - Agrega un offset fijo por celda (generado al iniciar el servicio) para simular variacion de sensor
 - **Color**: `get_weight_color(weight, total_weight)` determina color verde/amarillo/rojo
 
 ### 4. Capa de Modelos (Models)
