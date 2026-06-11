@@ -76,6 +76,7 @@ build_exe_options = {
         # Archivos de configuracion
         ("config/settings.json", "config/settings.json"),
         # Documentacion (opcional - solo .md, sin emojis ni imagenes)
+        ("docs/cambios.md", "docs/cambios.md"),
         ("docs/protocolo_comunicacion.md", "docs/protocolo_comunicacion.md"),
         ("README.md", "README.md"),
     ],

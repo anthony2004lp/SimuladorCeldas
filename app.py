@@ -99,15 +99,15 @@ class SimuladorCeldas:
         control_frame = ttk.LabelFrame(right_panel, text="Control", padding=15)
         control_frame.pack(fill="x", pady=(0, 10))
 
-        # Entrada de peso total
-        ttk.Label(control_frame, text="Peso Total (kg):", font=("Segoe UI", 10)).grid(
+        # Entrada de peso aplicado (lo que se coloca sobre la plataforma)
+        ttk.Label(control_frame, text="Peso aplicado (kg):", font=("Segoe UI", 10)).grid(
             row=0, column=0, sticky="w", pady=(0, 5)
         )
         weight_spinbox = ttk.Spinbox(
             control_frame,
             from_=MIN_WEIGHT,
             to=MAX_WEIGHT,
-            increment=1000,
+            increment=10000,
             textvariable=self.total_weight,
             width=15,
             font=("Segoe UI", 10)
@@ -122,11 +122,19 @@ class SimuladorCeldas:
             text="Poner peso en 0 kg",
             command=self._reiniciar_peso
         )
-        reset_weight_btn.grid(row=2, column=0, sticky="ew", pady=(0, 20))
+        reset_weight_btn.grid(row=2, column=0, sticky="ew", pady=(0, 5))
+
+        # Boton para tarar las celdas (elimina offsets y muestra solo peso aplicado)
+        tare_btn = ttk.Button(
+            control_frame,
+            text="Tara",
+            command=self._tare_celdas
+        )
+        tare_btn.grid(row=3, column=0, sticky="ew", pady=(0, 20))
 
         # Mostrar posicion
         ttk.Label(control_frame, text="Posicion:", font=("Segoe UI", 10, "bold")).grid(
-            row=3, column=0, sticky="w", pady=(0, 5)
+            row=4, column=0, sticky="w", pady=(0, 5)
         )
         self.pos_label = ttk.Label(
             control_frame,
@@ -134,7 +142,16 @@ class SimuladorCeldas:
             font=("Segoe UI", 12),
             foreground="#667eea"
         )
-        self.pos_label.grid(row=4, column=0, sticky="w", pady=(0, 20))
+        self.pos_label.grid(row=5, column=0, sticky="w", pady=(0, 20))
+
+        # Estado de la tara
+        self.tare_status_label = ttk.Label(
+            control_frame,
+            text="",
+            font=("Segoe UI", 8, "italic"),
+            foreground="#999"
+        )
+        self.tare_status_label.grid(row=6, column=0, sticky="w", pady=(0, 5))
 
         # Boton para reiniciar
         reset_btn = ttk.Button(
@@ -142,7 +159,7 @@ class SimuladorCeldas:
             text="Reiniciar posicion",
             command=self._reiniciar_posicion
         )
-        reset_btn.grid(row=5, column=0, sticky="ew")
+        reset_btn.grid(row=7, column=0, sticky="ew")
 
         # Panel de conexion serial
         serial_frame = ttk.LabelFrame(right_panel, text="Puerto Serial", padding=15)
@@ -222,6 +239,7 @@ class SimuladorCeldas:
         # Panel de resultados (pesos en esquinas)
         results_frame = ttk.LabelFrame(main_frame, text="Distribucion de Pesos", padding=15)
         results_frame.grid(row=2, column=0, columnspan=2, pady=(20, 0), sticky="ew")
+        results_frame.columnconfigure(0, weight=1)
 
         # Crear labels para cada esquina
         self.weight_labels = {}
@@ -260,6 +278,27 @@ class SimuladorCeldas:
             )
             weight_label.pack(side="right")
             self.weight_labels[corner_key] = weight_label
+
+        # Total medido (suma real de las 4 celdas)
+        sep = ttk.Separator(results_frame, orient="horizontal")
+        sep.grid(row=2, column=0, columnspan=2, sticky="ew", pady=(10, 5))
+
+        total_frame = ttk.Frame(results_frame)
+        total_frame.grid(row=3, column=0, columnspan=2, sticky="ew")
+
+        ttk.Label(
+            total_frame,
+            text="Total medido:",
+            font=("Segoe UI", 10, "bold")
+        ).pack(side="left")
+
+        self.total_measured_label = ttk.Label(
+            total_frame,
+            text="0 kg",
+            font=("Segoe UI", 11, "bold"),
+            foreground="#333"
+        )
+        self.total_measured_label.pack(side="right")
 
         # Vincular eventos del mouse al canvas
         self.canvas.bind("<Button-1>", self._on_mouse_down)
@@ -393,6 +432,9 @@ class SimuladorCeldas:
                 foreground=color
             )
 
+        # Actualizar label de total medido
+        self.total_measured_label.config(text=f"{round(total, 2)} kg")
+
         # Actualizar label de posicion
         self.pos_label.config(text=f"({int(self.ball_x)}, {int(self.ball_y)})")
 
@@ -498,8 +540,11 @@ class SimuladorCeldas:
             self.ball_x, self.ball_y, weight
         )
 
+        # Obtener el total medido real (suma de las 4 celdas, incluye offsets + ruido)
+        measured_total = self.weight_service.get_measured_total(corner_weights)
+
         # Actualizar modelo
-        self.distribution.total_weight = weight
+        self.distribution.total_weight = measured_total
         self.distribution.position_x = self.ball_x
         self.distribution.position_y = self.ball_y
         self.distribution.corner_weights = corner_weights
@@ -507,13 +552,16 @@ class SimuladorCeldas:
         # Actualizar pesos en el protocolo de celdas virtuales
         self.cell_protocol.update_all_weights(corner_weights)
 
-        # Actualizar labels de pesos con colores
+        # Actualizar labels de pesos con colores (usa total medido como referencia)
         for corner, weight_value in corner_weights.items():
-            color = self.weight_service.get_weight_color(weight_value, weight)
+            color = self.weight_service.get_weight_color(weight_value, measured_total)
             self.weight_labels[corner].config(
                 text=f"{weight_value} kg",
                 foreground=color
             )
+
+        # Actualizar label de total medido
+        self.total_measured_label.config(text=f"{measured_total} kg")
 
         # Actualizar label de posicion
         self.pos_label.config(text=f"({int(self.ball_x)}, {int(self.ball_y)})")
@@ -527,6 +575,30 @@ class SimuladorCeldas:
             return
 
         self.total_weight.set(0)
+        self._calcular_y_actualizar()
+
+    def _tare_celdas(self):
+        """Activa o desactiva la tara de las celdas de carga
+
+        Al activar: captura los offsets como linea base y los resta de las lecturas.
+        Los valores negativos desaparecen y el sistema mide solo el peso aplicado + ruido.
+
+        Al desactivar: restaura los offsets originales (las celdas vuelven a mostrar
+        sus valores sin compensar, incluyendo los negativos).
+        """
+        if self.receiving_data:
+            return
+
+        if self.weight_service.is_tared:
+            self.weight_service.clear_tare()
+            self.tare_status_label.config(text="")
+        else:
+            self.weight_service.tare()
+            self.tare_status_label.config(
+                text="Tara activa",
+                foreground="#4CAF50"
+            )
+
         self._calcular_y_actualizar()
 
     def _mover_a_esquina(self, corner_key):

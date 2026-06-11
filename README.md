@@ -10,12 +10,12 @@ Aplicacion de escritorio interactiva que visualiza la distribucion de peso entre
 │  Simulador de Distribucion de Pesos                 │
 ├──────────┬──────────────────────────────────────────┤
 │          │  Control          Puerto Serial          │
-│  ┌──────┐│  Peso: [100]      COM3  [9600]           │
-│  │  TL  ││  [0 kg]          [Conectar]              │
-│  │      ││  Pos: (200,200)  Desconectado            │
-│  │  ●   ││  [Reiniciar]                             │
-│  │      ││  Modo: Simulacion                        │
-│  │  BL  ││                                          │
+│  ┌──────┐│  Peso aplicado:   COM3  [9600]           │
+│  │  TL  ││  [100]            [Conectar]             │
+│  │      ││  [0 kg]  [Tara]   Desconectado           │
+│  │  ●   ││  Pos: (200,200)                          │
+│  │      ││  [Reiniciar]                             │
+│  │  BL  ││  Modo: Simulacion                        │
 │  └──────┘│                                          │
 ├──────────┴──────────────────────────────────────────┤
 │  Distribucion de Pesos                              │
@@ -28,7 +28,7 @@ Aplicacion de escritorio interactiva que visualiza la distribucion de peso entre
 
 - Python 3.8 o superior
 - tkinter (incluido con Python)
-- NumPy 1.26
+- NumPy 2.4
 - pyserial 3.5
 - cx_Freeze==8.6.4
 
@@ -48,15 +48,17 @@ python setup.py bdist_msi (instalador)
 
 ### Modo Simulacion
 1. **Arrastrar la bola roja** dentro del cuadrado con el mouse
-2. **Ajustar el peso total** (0-500 kg, pasos de 10)
-3. Use **Poner peso en 0 kg** para llevar el peso total a cero
-4. Use **Reiniciar posicion** para centrar la bola
-5. Use **Llevar** en cada esquina para mover la bola directamente a esa posicion
-6. Los pesos en las esquinas se actualizan en tiempo real con colores:
+2. **Ajustar el peso aplicado** (0-160.000 kg) que se coloca sobre la plataforma
+3. Use **Poner peso en 0 kg** para llevar el peso aplicado a cero
+4. Use **Tara** para compensar los offsets de las celdas (las lecturas negativas desaparecen)
+5. Use **Reiniciar posicion** para centrar la bola
+6. Use **Llevar** en cada esquina para mover la bola directamente a esa posicion
+7. Los pesos en las esquinas se actualizan en tiempo real con colores:
    - Verde (< 33%): peso bajo
-   - Amarillo (33-66%): peso medio
+   - Azul (33-66%): peso medio
    - Rojo (> 66%): peso alto
-7. Cada celda tiene una variacion fija que se mantiene constante durante toda la sesion
+8. El **Total medido** es la suma real de las 4 celdas (incluye ruido gaussiano ±2 kg)
+9. Cada celda tiene una variacion fija (offset) que se compensa con la tara
 
 ### Modo Datos Reales (Serial)
 1. Conecte la balanza al puerto USB/RS232
@@ -65,6 +67,15 @@ python setup.py bdist_msi (instalador)
 4. Haga clic en **Conectar**
 5. La aplicacion cambia automaticamente a modo datos reales
 6. La bola se posiciona segun los valores de las celdas
+
+### Tara de celdas
+
+Las celdas de carga tienen **offsets fijos** que simulan errores de cero del sensor real. Al iniciar la app:
+- **Superior Izquierda** e **Inferior Derecha**: valores negativos (~ -95 a -100 kg)
+- **Superior Derecha** e **Inferior Izquierda**: valores positivos (~ 30 kg)
+- **Total medido**: puede diferir del peso aplicado por la suma de los offsets
+
+Para compensar, presione **Tara** — el sistema captura los offsets y los resta de todas las lecturas, comportandose como una balanza real tarada.
 
 ### Formato de datos serial esperado
 Lineas de texto terminadas en `\n`:
@@ -87,11 +98,13 @@ SimuladorCeldas/
 │   ├── models/
 │   │   └── weight_models.py      # Modelo de datos
 │   └── services/
-│       ├── weight_services.py    # Logica de interpolacion bilineal
-│       └── serial_service.py     # Comunicacion serial
+│       ├── weight_services.py    # Logica de interpolacion bilineal, ruido y tara
+│       ├── serial_service.py     # Comunicacion serial
+│       └── cell_protocol.py      # Protocolo HBM C16iC3 (celdas virtuales)
 ├── docs/
+│   ├── cambios.md                # Registro de cambios de realismo
 │   ├── arquitectura.md           # Arquitectura detallada
-|   ├── protocolo_comunicacion.md # Comunicacion de celdas
+│   ├── protocolo_comunicacion.md # Protocolo de celdas HBM
 │   └── requerimientos.md         # Requerimientos
 └── README.md
 ```

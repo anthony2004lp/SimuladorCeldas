@@ -36,3 +36,6 @@ Thumbs.db
 *.msi
 *.dmg
 *.app
+
+# Documentacion
+docs/cambios.md

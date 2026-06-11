@@ -1,6 +1,6 @@
 # Constantes del sistema
 SQUARE_SIZE = 400  # Tamano del cuadrado en pixeles
-MAX_WEIGHT = 50000000   # Peso maximo en kg
+MAX_WEIGHT = 160000   # Peso maximo en kg (4 celdas HBM C16iC3/40t = 160 toneladas)
 MIN_WEIGHT = 0     # Peso minimo en kg
 
 # Puntos de las esquinas (coordenadas relativas 0-1)
