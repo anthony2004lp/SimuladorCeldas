@@ -45,12 +45,17 @@ class SimuladorCeldas:
         self.forward_data_var = tk.BooleanVar(value=False)  # Reenviar datos al otro programa
         self._serial_update_id = None
         self._command_update_id = None  # ID para actualizacion de comando en UI
+        self._update_id = None          # ID para actualizacion continua
+        self._update_interval = 150     # ms entre actualizaciones (ruido en tiempo real)
 
         # Construir la interfaz grafica
         self._crear_interfaz()
 
         # Realizar el primer calculo
         self._calcular_y_actualizar()
+
+        # Iniciar actualizacion continua (ruido en tiempo real)
+        self._iniciar_actualizacion_continua()
 
     def _crear_interfaz(self):
         """
@@ -244,10 +249,10 @@ class SimuladorCeldas:
         # Crear labels para cada esquina
         self.weight_labels = {}
         corner_names = {
-            "top-left": "Superior Izquierda",
-            "top-right": "Superior Derecha",
-            "bottom-left": "Inferior Izquierda",
-            "bottom-right": "Inferior Derecha"
+            "S00": "Superior Izquierda",
+            "S01": "Superior Derecha",
+            "S02": "Inferior Izquierda",
+            "S03": "Inferior Derecha"
         }
 
         self.corner_buttons = {}
@@ -375,11 +380,14 @@ class SimuladorCeldas:
             self.root.after_cancel(self._command_update_id)
             self._command_update_id = None
 
+        # Reanudar actualizacion continua al volver a modo simulacion
+        self._iniciar_actualizacion_continua()
+
     def _on_serial_data(self, weights):
         """
         Recibe datos del puerto serial y actualiza la interfaz
         Args:
-            weights: Dict con pesos {top-left, top-right, bottom-left, bottom-right}
+            weights: Dict con pesos {S00, S01, S02, S03}
         """
         if not self.serial_service.is_connected():
             return
@@ -411,8 +419,8 @@ class SimuladorCeldas:
 
         # Calcular posicion aproximada desde los pesos (interpolacion inversa)
         if total > 0:
-            nx = (weights.get("bottom-right", 0) + weights.get("top-right", 0)) / total
-            ny = (weights.get("bottom-left", 0) + weights.get("bottom-right", 0)) / total
+            nx = (weights.get("S03", 0) + weights.get("S01", 0)) / total
+            ny = (weights.get("S02", 0) + weights.get("S03", 0)) / total
             self.ball_x = max(15, min(SQUARE_SIZE - 15, nx * SQUARE_SIZE))
             self.ball_y = max(15, min(SQUARE_SIZE - 15, ny * SQUARE_SIZE))
             self.distribution.position_x = self.ball_x
@@ -456,7 +464,7 @@ class SimuladorCeldas:
         Muestra el comando y respuesta en la UI para feedback visual
 
         Args:
-            command: Comando recibido (ej: "S01;MSV?")
+            command: Comando recibido (ej: "S00;MSV?")
             response: Respuesta enviada (ej: "-0010236")
         """
         if self._command_update_id:
@@ -484,13 +492,13 @@ class SimuladorCeldas:
         Solo reenvia si el checkbox esta activo y el puerto serial esta conectado
 
         Args:
-            weights: Dict con pesos {top-left, top-right, bottom-left, bottom-right}
+            weights: Dict con pesos {S00, S01, S02, S03}
         """
         if not self.forward_data_var.get() or not self.serial_service.is_connected():
             return
 
         # Formato CSV con retorno de carro para compatibilidad
-        datos = f"{weights['top-left']},{weights['top-right']},{weights['bottom-left']},{weights['bottom-right']}\r\n"
+        datos = f"{weights['S00']},{weights['S01']},{weights['S02']},{weights['S03']}\r\n"
         self.serial_service.send_data(datos)
 
     def _dibujar_canvas(self):
@@ -569,6 +577,24 @@ class SimuladorCeldas:
         # Reenviar datos al otro programa si esta activo
         self._reenviar_datos(corner_weights)
 
+    def _iniciar_actualizacion_continua(self):
+        """Inicia el bucle de actualizacion continua para simular ruido en tiempo real"""
+        self._detener_actualizacion_continua()
+        self._programar_actualizacion()
+
+    def _detener_actualizacion_continua(self):
+        """Detiene el bucle de actualizacion continua"""
+        if self._update_id:
+            self.root.after_cancel(self._update_id)
+            self._update_id = None
+
+    def _programar_actualizacion(self):
+        """Programa la proxima actualizacion continua"""
+        if self.receiving_data:
+            return
+        self._calcular_y_actualizar()
+        self._update_id = self.root.after(self._update_interval, self._programar_actualizacion)
+
     def _reiniciar_peso(self):
         """Pone el peso total en 0 kg"""
         if self.receiving_data:
@@ -608,10 +634,10 @@ class SimuladorCeldas:
 
         margin = 15
         positions = {
-            "top-left": (margin, margin),
-            "top-right": (SQUARE_SIZE - margin, margin),
-            "bottom-left": (margin, SQUARE_SIZE - margin),
-            "bottom-right": (SQUARE_SIZE - margin, SQUARE_SIZE - margin)
+            "S00": (margin, margin),
+            "S01": (SQUARE_SIZE - margin, margin),
+            "S02": (margin, SQUARE_SIZE - margin),
+            "S03": (SQUARE_SIZE - margin, SQUARE_SIZE - margin)
         }
         self.ball_x, self.ball_y = positions[corner_key]
         self._dibujar_canvas()

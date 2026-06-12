@@ -96,7 +96,7 @@ class SerialService:
         """
         Inicia un hilo en segundo plano para leer datos del puerto serial
         Args:
-            data_callback: Funcion que recibe los pesos parseados {top-left, top-right, ...}
+            data_callback: Funcion que recibe los pesos parseados {S00, S01, S02, S03}
             error_callback: Funcion que recibe mensajes de error
         """
         self.on_data_received = data_callback
@@ -202,17 +202,17 @@ class SerialService:
         Args:
             line: Linea de texto recibida
         Returns:
-            dict | None: Pesos parseados {top-left, top-right, bottom-left, bottom-right}
+            dict | None: Pesos parseados {S00, S01, S02, S03}
         """
         # Intentar parsear como JSON primero
         if line.startswith("{"):
             try:
                 data = json.loads(line)
                 return {
-                    "top-left": float(data.get("top-left", 0)),
-                    "top-right": float(data.get("top-right", 0)),
-                    "bottom-left": float(data.get("bottom-left", 0)),
-                    "bottom-right": float(data.get("bottom-right", 0))
+                    "S00": float(data.get("S00", 0)),
+                    "S01": float(data.get("S01", 0)),
+                    "S02": float(data.get("S02", 0)),
+                    "S03": float(data.get("S03", 0))
                 }
             except (json.JSONDecodeError, ValueError, TypeError):
                 pass
@@ -223,10 +223,10 @@ class SerialService:
             try:
                 values = [float(p.strip()) for p in parts]
                 return {
-                    "top-left": values[0],
-                    "top-right": values[1],
-                    "bottom-left": values[2],
-                    "bottom-right": values[3]
+                    "S00": values[0],
+                    "S01": values[1],
+                    "S02": values[2],
+                    "S03": values[3]
                 }
             except (ValueError, TypeError):
                 pass
@@ -237,10 +237,10 @@ class SerialService:
             try:
                 values = [float(n) for n in numbers[:4]]
                 return {
-                    "top-left": values[0],
-                    "top-right": values[1],
-                    "bottom-left": values[2],
-                    "bottom-right": values[3]
+                    "S00": values[0],
+                    "S01": values[1],
+                    "S02": values[2],
+                    "S03": values[3]
                 }
             except (ValueError, TypeError):
                 pass

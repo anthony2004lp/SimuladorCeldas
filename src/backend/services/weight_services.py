@@ -15,17 +15,19 @@ class WeightService:
         # Offset fijo por celda (simula error de cero de cada sensor)
         # Antes de tarar, algunas celdas pueden mostrar valores negativos
         self._corner_offsets = {
-            'top-left': round(random.uniform(-130, -120), 2),
-            'top-right': round(random.uniform(0, 9), 2),
-            'bottom-left': round(random.uniform(0, 9), 2),
-            'bottom-right': round(random.uniform(-130, -120), 2)
+            'S00': round(random.uniform(-130, -120), 2),
+            'S01': round(random.uniform(0, 9), 2),
+            'S02': round(random.uniform(0, 9), 2),
+            'S03': round(random.uniform(-130, -120), 2)
         }
 
         # Tara: captura el offset como linea base y lo resta de lecturas futuras
         self._tare_baseline = None
 
-        # Ruido gaussiano: desviacion estandar en kg (simula ruido electrico del sensor)
-        self._noise_std = 2.0
+        # Configuracion de ruido realista para las celdas de carga
+        self._noise_base_std = 0.5      # Ruido base en kg (siempre presente)
+        self._noise_load_factor = 0.003 # 0.3% del peso leido como ruido proporcional
+        self._noise_common_std = 0.3    # Ruido comun a todas las celdas (fuente de poder, etc.)
 
     # ------------------------------------------------------------------ #
     # Tara
@@ -51,15 +53,34 @@ class WeightService:
         return self._tare_baseline is not None
 
     # ------------------------------------------------------------------ #
-    # Ruido
+    # Ruido realista
     # ------------------------------------------------------------------ #
 
-    def _get_noise(self):
-        """Genera ruido gaussiano con media 0 y std _noise_std
+    def _get_noise(self, cell_weight=0):
+        """Genera ruido realista para una celda de carga
 
-        Simula el ruido electrico y termico inherente a las celdas de carga.
+        Compuesto por:
+        - Ruido base: pequena fluctuacion electrica siempre presente
+        - Ruido proporcional: aumenta con el peso medido (0.3% del valor)
+        - Ruido comun: afecta a todas las celdas por igual (fuente de poder)
+
+        Args:
+            cell_weight: Peso actual en la celda en kg
+
+        Returns:
+            float: Ruido total para esta celda
         """
-        return round(random.gauss(0, self._noise_std), 2)
+        base = random.gauss(0, self._noise_base_std)
+        proportional = random.gauss(0, abs(cell_weight) * self._noise_load_factor)
+        return round(base + proportional, 2)
+
+    def _get_common_noise(self):
+        """Genera ruido comun que afecta a todas las celdas por igual
+
+        Simula variaciones en la fuente de poder o interferencias
+        electromagneticas que afectan a todo el sistema.
+        """
+        return round(random.gauss(0, self._noise_common_std), 2)
 
     # ------------------------------------------------------------------ #
     # Calculo de pesos
@@ -80,7 +101,7 @@ class WeightService:
             total_weight: Peso aplicado sobre la plataforma en kg
 
         Returns:
-            dict: Pesos en cada esquina (top-left, top-right, bottom-left, bottom-right)
+            dict: Pesos en cada celda {S00, S01, S02, S03}
         """
         # Normalizar coordenadas a rango [0, 1]
         nx = position_x / self.square_size
@@ -102,16 +123,21 @@ class WeightService:
 
         # Peso ideal en cada celda (distribucion del peso aplicado)
         base = {
-            'top-left': raw_tl * total_weight,
-            'top-right': raw_tr * total_weight,
-            'bottom-left': raw_bl * total_weight,
-            'bottom-right': raw_br * total_weight,
+            'S00': raw_tl * total_weight,
+            'S01': raw_tr * total_weight,
+            'S02': raw_bl * total_weight,
+            'S03': raw_br * total_weight,
         }
 
+        # Ruido comun que afecta a todas las celdas simultaneamente
+        common_noise = self._get_common_noise()
+
         result = {}
-        for corner in ['top-left', 'top-right', 'bottom-left', 'bottom-right']:
+        for corner in ['S00', 'S01', 'S02', 'S03']:
             # Peso ideal + offset fijo del sensor + ruido de medicion
-            value = base[corner] + self._corner_offsets[corner] + self._get_noise()
+            ideal = base[corner]
+            cell_noise = self._get_noise(ideal)
+            value = ideal + self._corner_offsets[corner] + cell_noise + common_noise
 
             # Si la tara esta activa, restar la linea base (offset capturado)
             if self._tare_baseline is not None:

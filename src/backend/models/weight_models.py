@@ -15,10 +15,10 @@ class WeightDistribution:
         self.position_y = position_y
         self.square_size = square_size
         self.corner_weights = {
-            'top-left': 0,        # Peso en esquina superior izquierda
-            'top-right': 0,       # Peso en esquina superior derecha
-            'bottom-left': 0,     # Peso en esquina inferior izquierda
-            'bottom-right': 0     # Peso en esquina inferior derecha
+            'S00': 0,        # Peso en esquina superior izquierda
+            'S01': 0,       # Peso en esquina superior derecha
+            'S02': 0,     # Peso en esquina inferior izquierda
+            'S03': 0     # Peso en esquina inferior derecha
         }
 
     def to_dict(self):

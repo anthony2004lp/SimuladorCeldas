@@ -6,7 +6,7 @@ Soporta dos formatos de comando:
 Formato multi-linea (nuevo):
   S98                     # Llamada a grupo (todas las celdas, no responden)
   MSV? o msv?             # Comando a ejecutar (case insensitive)
-  S02                     # Celda destino a consultar
+  S01                     # Celda destino a consultar
 
 Formato clasico (compatibilidad):
   Sxx;MSV?;   - Consultar el peso de la celda en direccion xx
@@ -29,9 +29,9 @@ class VirtualCell:
         """
         Inicializa una celda virtual
         Args:
-            address: Direccion de la celda (formato Sxx, ej: S01)
+            address: Direccion de la celda (formato Sxx, ej: S00)
             serial_number: Numero de serie unico (ej: M64702)
-            name: Nombre descriptivo opcional (top-left, top-right, etc.)
+            name: Nombre descriptivo opcional (S00, S01, etc.)
         """
         self.address = address          # Direccion asignada (S00, S01, etc.)
         self.serial_number = serial_number  # Numero de serie unico
@@ -94,10 +94,10 @@ class CellProtocol:
     def _init_default_cells(self):
         """Crea las 4 celdas virtuales por defecto, una por esquina"""
         defaults = [
-            ("S00", "M64701", "top-left"),
-            ("S01", "M64702", "top-right"),
-            ("S02", "M64703", "bottom-left"),
-            ("S03", "M64704", "bottom-right"),
+            ("S00", "M64701", "S00"),
+            ("S01", "M64702", "S01"),
+            ("S02", "M64703", "S02"),
+            ("S03", "M64704", "S03"),
         ]
         for addr, serial, name in defaults:
             self.cells[addr] = VirtualCell(addr, serial, name)
@@ -127,27 +127,17 @@ class CellProtocol:
         return False
 
     def update_all_weights(self, weights_dict):
-        """Actualiza los pesos de todas las celdas desde un dict de esquinas"""
-        corner_to_addr = {
-            "top-left": "S00", "top-right": "S01",
-            "bottom-left": "S02", "bottom-right": "S03",
-        }
-        for corner_name, weight in weights_dict.items():
-            addr = corner_to_addr.get(corner_name)
-            if addr:
-                self.update_weight(addr, weight)
+        """Actualiza los pesos de todas las celdas desde un dict S00-S03"""
+        for cell_id, weight in weights_dict.items():
+            self.update_weight(cell_id, weight)
 
     def get_all_weights_dict(self):
-        """Devuelve los pesos actuales en formato esquinas"""
-        addr_to_corner = {
-            "S00": "top-left", "S01": "top-right",
-            "S02": "bottom-left", "S03": "bottom-right",
-        }
+        """Devuelve los pesos actuales en formato S00-S03"""
         result = {}
-        for addr, corner in addr_to_corner.items():
+        for addr in ['S00', 'S01', 'S02', 'S03']:
             cell = self.get_cell_by_address(addr)
             if cell:
-                result[corner] = cell.weight
+                result[addr] = cell.weight
         return result
 
     # ------------------------------------------------------------------ #

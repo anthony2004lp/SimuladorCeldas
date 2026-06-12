@@ -19,8 +19,8 @@ Aplicacion de escritorio interactiva que visualiza la distribucion de peso entre
 │  └──────┘│                                          │
 ├──────────┴──────────────────────────────────────────┤
 │  Distribucion de Pesos                              │
-│  Sup Izq: 25.0 [Llevar]  Sup Der: 25.0 [Llevar]    │
-│  Inf Izq: 25.0 [Llevar]  Inf Der: 25.0 [Llevar]    │
+│  Sup Izq: 25.0 [Llevar]  Sup Der: 25.0 [Llevar]     │
+│  Inf Izq: 25.0 [Llevar]  Inf Der: 25.0 [Llevar]     │
 └─────────────────────────────────────────────────────┘
 ```
 

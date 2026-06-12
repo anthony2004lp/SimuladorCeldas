@@ -5,10 +5,10 @@ MIN_WEIGHT = 0     # Peso minimo en kg
 
 # Puntos de las esquinas (coordenadas relativas 0-1)
 CORNERS = {
-    'top-left': {'x': 0, 'y': 0},      # Esquina superior izquierda
-    'top-right': {'x': 1, 'y': 0},     # Esquina superior derecha
-    'bottom-left': {'x': 0, 'y': 1},   # Esquina inferior izquierda
-    'bottom-right': {'x': 1, 'y': 1}   # Esquina inferior derecha
+    'S00': {'x': 0, 'y': 0},      # Esquina superior izquierda
+    'S01': {'x': 1, 'y': 0},     # Esquina superior derecha
+    'S02': {'x': 0, 'y': 1},   # Esquina inferior izquierda
+    'S03': {'x': 1, 'y': 1}   # Esquina inferior derecha
 }
 
 # Colores de visualizacion
